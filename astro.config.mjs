@@ -20,17 +20,18 @@ export default defineConfig({
                 {
                     label: 'Overview',
                     items: [
-                        { label: 'High-level design', link: '' },
+                        { label: 'High-level design', link: '/overview/hld/' },
                     ]
                 },
                 {
                     label: 'Internals',
                     items: [
-                        { label: 'DagWatcher', link: '' },
-                        { label: 'TaskScheduler', link: '' },
-                        { label: 'Schedule', link: '' },
-                        { label: 'Loggers', link: '' },
-                        { label: 'Databases', link: '' },
+                        { label: 'DAGs', link: '/internals/dags/' },
+                        { label: 'Schedules', link: '/internals/schedules/' },
+                        { label: 'DagWatcher', link: '/internals/dagwatcher/' },
+                        { label: 'TaskScheduler', link: '/internals/taskscheduler/' },
+                        { label: 'Logging', link: '/internals/loggers/' },
+                        { label: 'Databases', link: '/internals/dbs/' },
                     ]
                 },
             ],
