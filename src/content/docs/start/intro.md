@@ -125,7 +125,7 @@ func (pt printTask) Execute(tc dag.TaskContext) error {
 ```
 
 Next, we'll define a simple DAG with two tasks `start` and `finish`, both of
-`PrintTask` type. You can place type definition and function either in `main.go`
+`printTask` type. You can place type definition and function either in `main.go`
 file or any other `*.go` file within the same directory.
 
 
@@ -165,7 +165,7 @@ go build
 ```
 
 Every 10 seconds, you should see scheduler logs and our messages from
-`PrintTask` on the console's standard output.
+`printTask` on the console's standard output.
 
 
 ```bash
@@ -243,8 +243,8 @@ sqlite3 scheduler.db 'SELECT DagId, TaskId, IsCurrent, TaskBodySource FROM dagta
 ```bash
 DagId    TaskId  IsCurrent  InsertTs                             TaskTypeName
 -------  ------  ---------  -----------------------------------  ------------
-example  start   1          2024-03-11T23:50:11.494468CET+01:00  PrintTask
-example  finish  1          2024-03-11T23:50:11.494468CET+01:00  PrintTask
+example  start   1          2024-03-11T23:50:11.494468CET+01:00  printTask
+example  finish  1          2024-03-11T23:50:11.494468CET+01:00  printTask
 
 
 DagId    TaskId  IsCurrent  TaskBodySource
