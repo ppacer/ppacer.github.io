@@ -4,12 +4,12 @@ title: Getting started with ppacer
 
 ## Intro
 
-For starters we are going to setup new Go project, install ppacer, configure
-ppacer scheduler and executor in a single program, define new DAG which would
-run each 10 seconds, run the program and eventually explore ppacer database.
+To begin, we'll set up  new Go project, install ppacer, configure the ppacer
+scheduler and executor within a single program, define new DAG that runs each
+10 seconds, execute the program, and finally, explore the ppacer database.
 
 :::note
-The only requirement is Go compiler in version at least 1.22.
+The only prerequisite is having Go compiler in version `1.22` or higher.
 :::
 
 
@@ -25,8 +25,8 @@ go get github.com/ppacer/core/...
 
 ## Setting up scheduler and executor
 
-Now we can proceed to start scheduler and executor in a single program. Let's
-start with creating file `main.go` with the following content:
+Now, let's proceed to initiate the scheduler and executor within a single
+program. Start by creating a file named `main.go` with the following content:
 
 ```go
 package main
@@ -54,27 +54,16 @@ func main() {
     meta.ParseASTs(taskGoFiles)
     dags := dag.Registry{} // no DAGs yet
 
-    // Setup logger and databases
-    logger := slog.Default()
-    dbClient, dbErr := db.NewSqliteClient("scheduler.db", logger)
-    logsDbClient, logsDbErr := db.NewSqliteClientForLogs("logs.db", logger)
-    if dbErr != nil || logsDbErr != nil {
-        log.Panic(dbErr, logsDbErr)
-    }
-
-    // Setup scheduler
-    config := scheduler.DefaultConfig
-    queues := scheduler.DefaultQueues(config)
-    scheduler := scheduler.New(dbClient, queues, config, logger)
-    schedulerHttpHandler := scheduler.Start(dags)
-    schedulerServer := &http.Server{
-        Addr:    fmt.Sprintf(":%d", port),
-        Handler: schedulerHttpHandler,
-    }
+    // Setup default scheduler
+    schedulerServer := scheduler.DefaultStarted(dags, "scheduler.db", port)
 
     // Setup and run executor in a separate goroutine
     go func() {
         schedUrl := fmt.Sprintf("http://localhost:%d", port)
+        logsDbClient, logsDbErr := db.NewSqliteClientForLogs("logs.db", nil)
+        if logsDbErr != nil {
+            log.Panic(logsDbErr)
+        }
         executor := exec.New(schedUrl, logsDbClient, logger, nil)
         executor.Start(dags)
     }()
@@ -88,63 +77,63 @@ func main() {
 }
 ```
 
-In the current version on `main` function, we parse Go files ASTs (to get Task
-source code, more on this later), setup two SQLite databases - one for the
-scheduler and the other one for logs. Then we configure and setup the
-scheduler. Next step is to setup and start an executor in a separate goroutine.
-Finally we start scheduler HTTP server to enable communication between
-executors, clients, users and the scheduler.
+In the `main` function, we parse Go files' ASTs (to retrive the Task source
+code, more on this later), initialize default `Scheduler`, setup and start an
+executor in a separate goroutine, and finally, launch the scheduler's HTTP
+server to enable communication between executor(s), clients, users and the
+scheduler.
 
-At this point we don't have any DAG defined yet, but program should compile:
+At this point, we have not defined any DAGs yet, but the program should compile
+and execute:
 
 ```bash
 go build
 ./ppacer_demo
 ```
 
-You should be able to see something along those lines
+Upon running, you should see messages similar to the following:
 
 ```bash
 2024/03/11 23:19:57 INFO Start syncing DAG registry with dags and dagtasks tables
 2024/03/11 23:19:57 INFO Finished syncing DAG registry with dags and dagtasks tables duration=237.875µs
 ```
 
-and then program will run forever. You can kill it for now. Running the
-program for the first time should also setup two mentioned SQLite database for
-scheduler metadata and logs.
+The program will continue running indefinitely. You can terminate it for now.
+Launching the program for the first time also sets up the two mentioned SQLite
+databases for scheduler metadata and logs.
 
 
 ## Defining Task and DAG
 
-Let's now create our first DAG. In ppacer DAGs are directed acyclic graphs made
-of [Tasks](https://pkg.go.dev/github.com/ppacer/core/dag#Task), so let's start
-there.
+Now, let's create our first DAG. In ppacer DAGs are directed acyclic graphs
+composed of [Tasks](https://pkg.go.dev/github.com/ppacer/core/dag#Task). Let's
+start by defining a Task:
 
 
 ```go
-type PrintTask struct {
-    TaskId string
+type printTask struct {
+    taskId string
 }
 
-func (pt PrintTask) Id() string { return pt.TaskId }
+func (pt printTask) Id() string { return pt.taskId }
 
-func (pt PrintTask) Execute(tc dag.TaskContext) error {
-    fmt.Printf(" >>> PrintTask <<<: %s\n", pt.TaskId)
+func (pt printTask) Execute(tc dag.TaskContext) error {
+    fmt.Printf(" >>> PrintTask <<<: %s\n", pt.taskId)
     tc.Logger.Info("PrintTask finished!", "ts", time.Now())
     return nil
 }
 ```
 
-Now let's define a simple DAG with just two tasks `start` and `finish`, both of
-type `PrintTask`. You can put type definition and function either in `main.go`
-file or any other `*.go` file within the same catalog.
+Next, we'll define a simple DAG with two tasks `start` and `finish`, both of
+`PrintTask` type. You can place type definition and function either in `main.go`
+file or any other `*.go` file within the same directory.
 
 
 ```go
 func printDAG(dagId string) dag.Dag {
     // [start] --> [end]
-    start := dag.NewNode(PrintTask{TaskId: "start"})
-    start.NextTask(PrintTask{TaskId: "finish"})
+    start := dag.NewNode(printTask{taskId: "start"})
+    start.NextTask(printTask{taskId: "finish"})
 
     startTs := time.Date(2024, time.March, 11, 12, 0, 0, 0, time.UTC)
     schedule := dag.FixedSchedule{Interval: 10 * time.Second, Start: startTs}
@@ -157,8 +146,8 @@ func printDAG(dagId string) dag.Dag {
 }
 ```
 
-At this point we can add a DAG into `dag.Registry` in our main function, like
-this:
+We can now add this DAG to the `dag.Registry` in our `main` function, like
+so:
 
 ```go
     ...
@@ -168,17 +157,15 @@ this:
     ...
 ```
 
-After adding new DAG into the registry, feel free to build and run the program
-once again
-
+Rebuilding and rerun the program:
 
 ```bash
 go build
 ./ppacer_demo
 ```
 
-Now each 10 seconds you should see on the console standard output scheduler
-logs and our messages from `PrintTask`
+Every 10 seconds, you should see scheduler logs and our messages from
+`PrintTask` on the console's standard output.
 
 
 ```bash
@@ -188,14 +175,14 @@ logs and our messages from `PrintTask`
 2024/03/11 23:50:50 INFO Start upserting dag run task status dagruntask="{DagId:example AtTime:2024-03-11 22:50:50 +0000 UTC TaskId:finish}" status=SUCCESS
 ```
 
-Feel free to wait for a bit and then terminate the program. This time databases
-should not be empty.
+You can observe the output for a while, then stop the program. This time,
+databases should contain data.
 
 
 ## Exploring scheduler database
 
-Currently the frontend for ppacer is not yet implemented, but you can go
-straight ahead and look into the scheduler database.
+While a frontend for ppacer is not yet available, you can directly explore the
+scheduler database.
 
 
 ### dags table
@@ -263,22 +250,15 @@ example  finish  1          2024-03-11T23:50:11.494468CET+01:00  PrintTask
 DagId    TaskId  IsCurrent  TaskBodySource
 -------  ------  ---------  ------------------------------------------------------------
 example  start   1          {
-                                fmt.Printf(" >>> PrintTask <<<: %s\n", pt.TaskId)
+                                fmt.Printf(" >>> PrintTask <<<: %s\n", pt.taskId)
                                 tc.Logger.Info("PrintTask finished!", "ts", time.Now())
                                 return nil
                             }
 
 example  finish  1          {
-                                fmt.Printf(" >>> PrintTask <<<: %s\n", pt.TaskId)
+                                fmt.Printf(" >>> PrintTask <<<: %s\n", pt.taskId)
                                 tc.Logger.Info("PrintTask finished!", "ts", time.Now())
                                 return nil
                             }
 ```
-
-
-
-
-
-
-
 
