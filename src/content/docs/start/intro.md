@@ -4,7 +4,13 @@ title: Getting started with ppacer
 
 ## Intro
 
-**TODO** describe in words what are we gonna to implement in the first example.
+For starters we are going to setup new Go project, install ppacer, configure
+ppacer scheduler and executor in a single program, define new DAG which would
+run each 10 seconds, run the program and eventually explore ppacer database.
+
+:::note
+The only requirement is Go compiler in version at least 1.22.
+:::
 
 
 ## Installing ppacer
@@ -26,18 +32,18 @@ start with creating file `main.go` with the following content:
 package main
 
 import (
-	"embed"
-	"fmt"
-	"log"
-	"log/slog"
-	"net/http"
+    "embed"
+    "fmt"
+    "log"
+    "log/slog"
+    "net/http"
     "time"
 
-	"github.com/ppacer/core/dag"
-	"github.com/ppacer/core/db"
-	"github.com/ppacer/core/exec"
-	"github.com/ppacer/core/meta"
-	"github.com/ppacer/core/scheduler"
+    "github.com/ppacer/core/dag"
+    "github.com/ppacer/core/db"
+    "github.com/ppacer/core/exec"
+    "github.com/ppacer/core/meta"
+    "github.com/ppacer/core/scheduler"
 )
 
 //go:embed *.go
@@ -190,6 +196,85 @@ should not be empty.
 
 Currently the frontend for ppacer is not yet implemented, but you can go
 straight ahead and look into the scheduler database.
+
+
+### dags table
+
+```bash
+sqlite3 scheduler.db 'SELECT DagId, StartTs, Schedule, CreateTs FROM dags'
+```
+
+```bash
+DagId    StartTs                       Schedule            CreateTs
+-------  ----------------------------  ------------------  -----------------------------------
+example  2024-03-11T12:00:00UTC+00:00  FixedSchedule: 10s  2024-03-11T23:50:11.493288CET+01:00
+```
+
+### dagruns table
+
+
+```bash
+sqlite3 scheduler.db 'SELECT * FROM dagruns'
+```
+
+```bash
+RunId  DagId    ExecTs                        InsertTs                             Status   StatusUpdateTs                       Version
+-----  -------  ----------------------------  -----------------------------------  -------  -----------------------------------  -------
+1      example  2024-03-11T22:50:20UTC+00:00  2024-03-11T23:50:20.008809CET+01:00  SUCCESS  2024-03-11T23:50:20.040002CET+01:00  0.0.1  
+2      example  2024-03-11T22:50:30UTC+00:00  2024-03-11T23:50:30.029023CET+01:00  SUCCESS  2024-03-11T23:50:30.05513CET+01:00   0.0.1  
+3      example  2024-03-11T22:50:40UTC+00:00  2024-03-11T23:50:40.046885CET+01:00  SUCCESS  2024-03-11T23:50:40.07069CET+01:00   0.0.1  
+4      example  2024-03-11T22:50:50UTC+00:00  2024-03-11T23:50:50.064339CET+01:00  SUCCESS  2024-03-11T23:50:50.088597CET+01:00  0.0.1  
+```
+
+### dagruntasks table
+
+
+```bash
+sqlite3 scheduler.db 'SELECT * FROM dagruntasks'
+```
+
+```bash
+DagId    ExecTs                        TaskId  InsertTs                             Status   StatusUpdateTs                       Version
+-------  ----------------------------  ------  -----------------------------------  -------  -----------------------------------  -------
+example  2024-03-11T22:50:20UTC+00:00  start   2024-03-11T23:50:20.017508CET+01:00  SUCCESS  2024-03-11T23:50:20.029982CET+01:00  0.0.1  
+example  2024-03-11T22:50:20UTC+00:00  finish  2024-03-11T23:50:20.031029CET+01:00  SUCCESS  2024-03-11T23:50:20.039541CET+01:00  0.0.1  
+example  2024-03-11T22:50:30UTC+00:00  start   2024-03-11T23:50:30.035029CET+01:00  SUCCESS  2024-03-11T23:50:30.044957CET+01:00  0.0.1  
+example  2024-03-11T22:50:30UTC+00:00  finish  2024-03-11T23:50:30.045843CET+01:00  SUCCESS  2024-03-11T23:50:30.054539CET+01:00  0.0.1  
+example  2024-03-11T22:50:40UTC+00:00  start   2024-03-11T23:50:40.052554CET+01:00  SUCCESS  2024-03-11T23:50:40.061641CET+01:00  0.0.1  
+example  2024-03-11T22:50:40UTC+00:00  finish  2024-03-11T23:50:40.062699CET+01:00  SUCCESS  2024-03-11T23:50:40.069775CET+01:00  0.0.1  
+example  2024-03-11T22:50:50UTC+00:00  start   2024-03-11T23:50:50.071096CET+01:00  SUCCESS  2024-03-11T23:50:50.07821CET+01:00   0.0.1  
+example  2024-03-11T22:50:50UTC+00:00  finish  2024-03-11T23:50:50.079578CET+01:00  SUCCESS  2024-03-11T23:50:50.088131CET+01:00  0.0.1  
+```
+
+### dagtasks table
+
+```
+sqlite3 scheduler.db 'SELECT DagId, TaskId, IsCurrent, InsertTs, TaskTypeName FROM dagtasks'
+sqlite3 scheduler.db 'SELECT DagId, TaskId, IsCurrent, TaskBodySource FROM dagtasks'
+```
+
+```bash
+DagId    TaskId  IsCurrent  InsertTs                             TaskTypeName
+-------  ------  ---------  -----------------------------------  ------------
+example  start   1          2024-03-11T23:50:11.494468CET+01:00  PrintTask
+example  finish  1          2024-03-11T23:50:11.494468CET+01:00  PrintTask
+
+
+DagId    TaskId  IsCurrent  TaskBodySource
+-------  ------  ---------  ------------------------------------------------------------
+example  start   1          {
+                                fmt.Printf(" >>> PrintTask <<<: %s\n", pt.TaskId)
+                                tc.Logger.Info("PrintTask finished!", "ts", time.Now())
+                                return nil
+                            }
+
+example  finish  1          {
+                                fmt.Printf(" >>> PrintTask <<<: %s\n", pt.TaskId)
+                                tc.Logger.Info("PrintTask finished!", "ts", time.Now())
+                                return nil
+                            }
+```
+
 
 
 
