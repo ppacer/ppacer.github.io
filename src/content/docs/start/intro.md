@@ -64,7 +64,7 @@ func main() {
         if logsDbErr != nil {
             log.Panic(logsDbErr)
         }
-        executor := exec.New(schedUrl, logsDbClient, logger, nil)
+        executor := exec.New(schedUrl, logsDbClient, nil, nil)
         executor.Start(dags)
     }()
 
