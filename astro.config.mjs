@@ -7,10 +7,15 @@ export default defineConfig({
     integrations: [
         starlight({
             title: 'ppacer docs',
+            description: 'ppacer documentation',
             social: {
-                github: 'https://github.com/ppacer',
+                github: 'https://github.com/ppacer/core',
             },
             sidebar: [
+                {
+                    label: 'API reference',
+                    link: 'https://pkg.go.dev/github.com/ppacer/core',
+                },
                 {
                     label: 'Getting started',
                     items: [

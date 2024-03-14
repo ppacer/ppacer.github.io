@@ -2,6 +2,8 @@
 title: ppacer
 ---
 
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
 Ppacer is a DAG scheduler implemented in Go. It aims to provide high
 reliability and performance, simple deployments, and minimal resource overhead.
 
@@ -14,6 +16,7 @@ challenges related to maintaining Python dependencies and dealing with
 relatively low performance and high resource overhead.
 
 
+
 ## Status
 
 Currently (March 2024) [ppacer core library](https://github.com/ppacer/core) is
@@ -21,7 +24,14 @@ close to MVP but far away from even `v0.1`. At the moment I'm focused on
 working on the frontend, to deliver MVP version of ppacer.
 
 
+<CardGrid>
+    <LinkCard title="'Hello World!' example" href="/start/intro/" />
+    <LinkCard title="API reference" href="https://pkg.go.dev/github.com/ppacer/core/" />
+</CardGrid>
+
+
 ## Features
 
 * **TODO**
+
 

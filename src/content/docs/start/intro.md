@@ -15,7 +15,7 @@ The only prerequisite is having Go compiler in version `1.22` or higher.
 
 ## Installing ppacer
 
-```bash
+```bash title="Setup Go project and install ppacer"
 mkdir ppacer-demo && cd ppacer-demo
 go mod init ppacer_demo
 go get github.com/ppacer/core@latest
@@ -29,6 +29,7 @@ Now, let's proceed to initiate the scheduler and executor within a single
 program. Start by creating a file named `main.go` with the following content:
 
 ```go
+// main.go
 package main
 
 import (
@@ -149,12 +150,17 @@ func printDAG(dagId string) dag.Dag {
 We can now add this DAG to the `dag.Registry` in our `main` function, like
 so:
 
-```go
-    ...
+```go {4-6}
+func main() {
+    const port = 9321
+    meta.ParseASTs(taskGoFiles)
     printDag := printDAG("example")
     dags := dag.Registry{}
     dags[printDag.Id] = printDag
-    ...
+
+    // Setup default scheduler
+    schedulerServer := scheduler.DefaultStarted(dags, "scheduler.db", port)
+    // ...
 ```
 
 Rebuilding and rerun the program:
@@ -184,6 +190,11 @@ databases should contain data.
 While a frontend for ppacer is not yet available, you can directly explore the
 scheduler database.
 
+:::note
+This chapter will be replaced with exploring actual web-based UI, when it'll be
+ready.
+:::
+
 
 ### dags table
 
@@ -191,7 +202,7 @@ scheduler database.
 sqlite3 scheduler.db 'SELECT DagId, StartTs, Schedule, CreateTs FROM dags'
 ```
 
-```bash
+```
 DagId    StartTs                       Schedule            CreateTs
 -------  ----------------------------  ------------------  -----------------------------------
 example  2024-03-11T12:00:00UTC+00:00  FixedSchedule: 10s  2024-03-11T23:50:11.493288CET+01:00
@@ -204,7 +215,7 @@ example  2024-03-11T12:00:00UTC+00:00  FixedSchedule: 10s  2024-03-11T23:50:11.4
 sqlite3 scheduler.db 'SELECT * FROM dagruns'
 ```
 
-```bash
+```
 RunId  DagId    ExecTs                        InsertTs                             Status   StatusUpdateTs                       Version
 -----  -------  ----------------------------  -----------------------------------  -------  -----------------------------------  -------
 1      example  2024-03-11T22:50:20UTC+00:00  2024-03-11T23:50:20.008809CET+01:00  SUCCESS  2024-03-11T23:50:20.040002CET+01:00  0.0.1  
@@ -220,7 +231,7 @@ RunId  DagId    ExecTs                        InsertTs                          
 sqlite3 scheduler.db 'SELECT * FROM dagruntasks'
 ```
 
-```bash
+```
 DagId    ExecTs                        TaskId  InsertTs                             Status   StatusUpdateTs                       Version
 -------  ----------------------------  ------  -----------------------------------  -------  -----------------------------------  -------
 example  2024-03-11T22:50:20UTC+00:00  start   2024-03-11T23:50:20.017508CET+01:00  SUCCESS  2024-03-11T23:50:20.029982CET+01:00  0.0.1  
@@ -235,12 +246,12 @@ example  2024-03-11T22:50:50UTC+00:00  finish  2024-03-11T23:50:50.079578CET+01:
 
 ### dagtasks table
 
-```
+```bash
 sqlite3 scheduler.db 'SELECT DagId, TaskId, IsCurrent, InsertTs, TaskTypeName FROM dagtasks'
 sqlite3 scheduler.db 'SELECT DagId, TaskId, IsCurrent, TaskBodySource FROM dagtasks'
 ```
 
-```bash
+```
 DagId    TaskId  IsCurrent  InsertTs                             TaskTypeName
 -------  ------  ---------  -----------------------------------  ------------
 example  start   1          2024-03-11T23:50:11.494468CET+01:00  printTask
@@ -262,3 +273,7 @@ example  finish  1          {
                             }
 ```
 
+## Complete example
+
+The whole sore code for above example can be found in here:
+[github.com/ppacer/examples](https://github.com/ppacer/examples/tree/main/hello).
