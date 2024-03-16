@@ -88,6 +88,7 @@ At this point, we have not defined any DAGs yet, but the program should compile
 and execute:
 
 ```bash
+go generate
 go build
 ./ppacer_demo
 ```
@@ -163,9 +164,10 @@ func main() {
     // ...
 ```
 
-Rebuilding and rerun the program:
+Rebuild and rerun the program:
 
 ```bash
+go generate
 go build
 ./ppacer_demo
 ```
