@@ -150,15 +150,45 @@ have another function which returns a new DAG and as tasks entry point it uses
 
 ## DAGs registry
 
-**TODO**
+DAGs registry is simply a collection of DAGs. In Go is represented as `type
+Registry map[Id]Dag`. It meant to be a repository for all DAGs in your program.
+Object `dag.Registry` is one of the main inputs for `DagWatcher` and
+`TaskScheduler`. DAGs from there are synced with the database on ppacer
+startup.
+
+It's up to you how you want to build your `dag.Registry`. In the simplest case
+you can just instantiate `dag.Registry` in the `main` function and add your
+DAGs there. You could have a single function which gathers all DAGs definitions
+and returns `dag.Registry`. Another example is you could have package-level
+variable for the registry and multiple packages on `init()` would append DAGs
+definition in that object. It doesn't really matter how you create the
+registry, the only thing important is having it defined before you initialize
+the Scheduler.
+
 
 ## Tests and validations for DAGs
 
-**TODO**
+The first and most obvious test you should have for your DAGs is verifying that
+graph of tasks are actually directed acyclic graphs. Given that you have a
+function which builds your registry, you can do it like this
+
+
+```go
+func TestDagsIsValid(t *testing.T) {
+    dags := buildDagsRegistry()
+    for id, dag := range dags {
+        if !dag.IsValid() {
+            t.Errorf("DAG %s is not a valid DAG", string(id))
+        }
+    }
+}
+```
+
+Please don't stop on this test. Given that `dag.Dag` are regular Go structures,
+you can use standard Go testing techniques.
 
 
 ## Limitations
 
-* Be aware of max number of tasks in a DAG - link to Go docs
-* For now DAGs can be only composed of Tasks. Another DAG cannot be referenced
-  within a DAG. This feature will be implemented after version `0.1`.
+* Be aware of max number of tasks in a DAG -
+  [MAX_RECURSION](https://pkg.go.dev/github.com/ppacer/core/dag#pkg-constants).

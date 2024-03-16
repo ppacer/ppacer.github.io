@@ -151,13 +151,12 @@ func printDAG(dagId string) dag.Dag {
 We can now add this DAG to the `dag.Registry` in our `main` function, like
 so:
 
-```go {4-6}
+```go {4-5}
 func main() {
     const port = 9321
     meta.ParseASTs(taskGoFiles)
-    printDag := printDAG("example")
     dags := dag.Registry{}
-    dags[printDag.Id] = printDag
+    dags.Add(printDAG("example"))
 
     // Setup default scheduler
     schedulerServer := scheduler.DefaultStarted(dags, "scheduler.db", port)
