@@ -275,5 +275,5 @@ example  finish  1          {
 
 ## Complete example
 
-The whole sore code for above example can be found in here:
+The whole source code for above example can be found in here:
 [github.com/ppacer/examples](https://github.com/ppacer/examples/tree/main/hello).

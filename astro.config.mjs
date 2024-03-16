@@ -29,7 +29,7 @@ export default defineConfig({
                     ]
                 },
                 {
-                    label: 'Internals',
+                    label: 'Concepts',
                     items: [
                         { label: 'DAGs', link: '/internals/dags/' },
                         { label: 'Schedules', link: '/internals/schedules/' },
