@@ -2,18 +2,18 @@
 title: DAGs
 ---
 
-The most common activity for developers who needs to use a scheduler is
-designing and implementing processes. In ppacer, similar to other schedulers,
-those processes are called *DAGs* which is short for directed acyclic graphs.
-In context of data structures DAGs are just a subgroup of graphs, but in
-context of schedulers we mean rather the process which is expressed as directed
-acyclic graph of tasks.
+For developers utilizing a scheduler, the primary task typically involves the
+design and implementation of processes. In ppacer those processes are called
+*DAGs* which is short for directed acyclic graphs. In context of data
+structures DAGs are just a subgroup of graphs with particular properties, but
+in context of schedulers we mean rather the **process** which is expressed as
+directed acyclic graph of tasks, including information about its schedule and
+other metadata.
 
 
 ## Tasks
 
-In ppacer `Task` is defined via interface. The interface is straighforward and
-looks like this
+In ppacer, a `Task` is defined via an interface, which is structured as follows:
 
 ```go
 type TaskContext struct {
@@ -53,9 +53,9 @@ an error.
 
 ## Nodes
 
-Before we dive into DAGs, we need to mention another abstraction -
-`dag.Node`. One can say it's implementation detail but it might be handy later
-and it's good to know about it. In the last chapter we learned about `dag.Task`
+Before delving into DAGs, let's discuss another key abstraction: `dag.Node`.
+One can say it's implementation detail but it might be handy later and it's
+good to know about this concept. In the last chapter we learned about `dag.Task`
 interface to represent generic tasks, but tasks aren't enough to define graph
 structure of dependencies between tasks. For this reason `dag.Node` exists.
 
@@ -86,9 +86,8 @@ contains information about
 * `Attr` - additional attributes
 
 
-One can you fluent API, to create a new `dag.Dag` instance. Simple example
-might look like the following
-
+You can use a fluent API to construct a new dag.Dag instance. For instance, a
+simple example would appear as follows:
 
 ```go
 start := dag.NewNode(emptyTask{taskId: "start"})
@@ -150,11 +149,11 @@ have another function which returns a new DAG and as tasks entry point it uses
 
 ## DAGs registry
 
-DAGs registry is simply a collection of DAGs. In Go is represented as `type
-Registry map[Id]Dag`. It meant to be a repository for all DAGs in your program.
-Object `dag.Registry` is one of the main inputs for `DagWatcher` and
-`TaskScheduler`. DAGs from there are synced with the database on ppacer
-startup.
+Consider the DAGs registry as a comprehensive collection of DAGs, functioning
+as a repository for all DAGs in your application. In Go it's represented as
+`type Registry map[Id]Dag`. Object `dag.Registry` is one of the main inputs for
+`DagWatcher` and `TaskScheduler`. DAGs from there are synced with the database
+on ppacer startup.
 
 It's up to you how you want to build your `dag.Registry`. In the simplest case
 you can just instantiate `dag.Registry` in the `main` function and add your
@@ -168,9 +167,9 @@ the Scheduler.
 
 ## Tests and validations for DAGs
 
-The first and most obvious test you should have for your DAGs is verifying that
-graph of tasks are actually directed acyclic graphs. Given that you have a
-function which builds your registry, you can do it like this
+A fundamental test for your DAGs is to ensure that the task graph indeed forms
+a directed acyclic graph. Given that you have a function which builds your
+registry, you can do it like this
 
 
 ```go
@@ -184,7 +183,7 @@ func TestDagsIsValid(t *testing.T) {
 }
 ```
 
-Please don't stop on this test. Given that `dag.Dag` are regular Go structures,
+Please don't stop on this test. Given that `dag.Dag` is a regular Go structure,
 you can use standard Go testing techniques.
 
 

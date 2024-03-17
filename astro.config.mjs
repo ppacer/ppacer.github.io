@@ -25,13 +25,17 @@ export default defineConfig({
                 {
                     label: 'Overview',
                     items: [
-                        { label: 'High-level design', link: '/overview/hld/' },
+                        {
+                            label: 'High-level design',
+                            link: '/overview/hld/',
+                            badge: { text: 'TODO', variant: 'caution' },
+                        },
                     ]
                 },
                 {
                     label: 'Concepts',
                     items: [
-                        { label: 'DAGs', link: '/internals/dags/' },
+                        { label: 'DAGs', link: '/internals/dags/', badge: 'New' },
                         { label: 'Schedules', link: '/internals/schedules/' },
                         { label: 'DagWatcher', link: '/internals/dagwatcher/' },
                         { label: 'TaskScheduler', link: '/internals/taskscheduler/' },
