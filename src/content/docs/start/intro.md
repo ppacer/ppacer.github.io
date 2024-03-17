@@ -37,11 +37,8 @@ import (
     "fmt"
     "log"
     "log/slog"
-    "net/http"
-    "time"
 
     "github.com/ppacer/core/dag"
-    "github.com/ppacer/core/db"
     "github.com/ppacer/core/exec"
     "github.com/ppacer/core/meta"
     "github.com/ppacer/core/scheduler"
@@ -61,11 +58,7 @@ func main() {
     // Setup and run executor in a separate goroutine
     go func() {
         schedUrl := fmt.Sprintf("http://localhost:%d", port)
-        logsDbClient, logsDbErr := db.NewSqliteClientForLogs("logs.db", nil)
-        if logsDbErr != nil {
-            log.Panic(logsDbErr)
-        }
-        executor := exec.New(schedUrl, logsDbClient, nil, nil)
+        executor := exec.NewDefault(schedUrl, "logs.db")
         executor.Start(dags)
     }()
 
@@ -138,7 +131,7 @@ func printDAG(dagId string) dag.Dag {
     start.NextTask(printTask{taskId: "finish"})
 
     startTs := time.Date(2024, time.March, 11, 12, 0, 0, 0, time.UTC)
-    schedule := dag.FixedSchedule{Interval: 10 * time.Second, Start: startTs}
+    schedule := schedule.NewFixed(startTs, 10*time.Second)
 
     printDag := dag.New(dag.Id(dagId)).
         AddSchedule(&schedule).
@@ -161,6 +154,26 @@ func main() {
     // Setup default scheduler
     schedulerServer := scheduler.DefaultStarted(dags, "scheduler.db", port)
     // ...
+```
+
+Just in case you don't have `goimports` setup in your environment, please make
+sure you added new imports after we added new DAG implementation (`goimports`
+does it automatically):
+
+```go {6,9}
+import (
+    "embed"
+    "fmt"
+    "log"
+    "log/slog"
+    "time"
+
+    "github.com/ppacer/core/dag"
+    "github.com/ppacer/core/dag/schedule"
+    "github.com/ppacer/core/exec"
+    "github.com/ppacer/core/meta"
+    "github.com/ppacer/core/scheduler"
+)
 ```
 
 Rebuild and rerun the program:
@@ -278,3 +291,5 @@ example  finish  1          {
 
 The whole source code for above example can be found in here:
 [github.com/ppacer/examples](https://github.com/ppacer/examples/tree/main/hello).
+
+
