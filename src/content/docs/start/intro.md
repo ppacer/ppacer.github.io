@@ -126,7 +126,7 @@ file or any other `*.go` file within the same directory.
 
 ```go
 func printDAG(dagId string) dag.Dag {
-    // [start] --> [end]
+    // [start] --> [finish]
     start := dag.NewNode(printTask{taskId: "start"})
     start.NextTask(printTask{taskId: "finish"})
 
