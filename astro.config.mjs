@@ -3,7 +3,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-    site: 'https://docs.ppacer.org',
+    site: 'https://ppacer.org',
     integrations: [
         starlight({
             title: 'ppacer docs',
