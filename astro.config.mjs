@@ -35,8 +35,8 @@ export default defineConfig({
                 {
                     label: 'Concepts',
                     items: [
-                        { label: 'DAGs', link: '/internals/dags/', badge: 'New' },
-                        { label: 'Schedules', link: '/internals/schedules/' },
+                        { label: 'DAGs', link: '/internals/dags/' },
+                        { label: 'Schedules', link: '/internals/schedules/', badge: 'New' },
                         { label: 'DagWatcher', link: '/internals/dagwatcher/' },
                         { label: 'TaskScheduler', link: '/internals/taskscheduler/' },
                         { label: 'Logging', link: '/internals/loggers/' },
