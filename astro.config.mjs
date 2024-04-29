@@ -11,6 +11,9 @@ export default defineConfig({
             social: {
                 github: 'https://github.com/ppacer/core',
             },
+            customCss: [
+                './src/styles/custom.css',
+            ],
             sidebar: [
                 {
                     label: 'API reference',
@@ -37,8 +40,6 @@ export default defineConfig({
                     items: [
                         { label: 'DAGs', link: '/internals/dags/' },
                         { label: 'Schedules', link: '/internals/schedules/', badge: 'New' },
-                        { label: 'DagWatcher', link: '/internals/dagwatcher/' },
-                        { label: 'TaskScheduler', link: '/internals/taskscheduler/' },
                         { label: 'Logging', link: '/internals/loggers/' },
                         { label: 'Databases', link: '/internals/dbs/' },
                     ]
