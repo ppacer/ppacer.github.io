@@ -93,10 +93,92 @@ every minute.
 ## Custom schedule
 
 There are cases when `cron` or other regular schedules aren't a good fit for
-our processes. Sometimes some processes needs to have complex scheduling logic
-which needs to be customized. Let's consider such example. Let's say our DAG
-needs to run on everyday at 10:15AM but in June and August it shouldn't run on
-Fridays and on Christmas eve it should run at 08:00AM.
+defining a schedule for our processes.
+
+### Simple custom schedule
+
+Let's say we have a process that needs to run on Friday afternoon (6 pm), just
+before the weekend, and then on Monday morning (8 am), just after the weekend.
+Such simple schedule cannot be expressed neither by cron, nor by fixed interval
+schedule. Let's try to implement this schedule.
+
+```go
+type AroundWeekend struct {
+    start time.Time
+}
+
+func NewAroundWeekend(start time.Time) *AroundWeekend {
+    return &AroundWeekend{start: start}
+}
+
+func (aw *AroundWeekend) String() string {
+    return "Fri 6pm & Mon 8am"
+}
+
+func (aw *AroundWeekend) Next(current time.Time, prevSched *time.Time) time.Time {
+    if prevSched != nil {
+        ps := *prevSched
+        if ps.Weekday() == time.Friday {
+            monday := ps.Add(3 * 24 * time.Hour)
+            return time.Date(monday.Year(), monday.Month(), monday.Day(),
+                8, 0, 0, 0, ps.Location())
+        }
+        if ps.Weekday() == time.Monday {
+            friday := ps.Add(4 * 24 * time.Hour)
+            return time.Date(friday.Year(), friday.Month(), friday.Day(),
+                18, 0, 0, 0, ps.Location())
+        }
+    }
+    // TODO
+}
+```
+
+We can easily implement this schedule given we can use previous schedule point.
+That's usually on the hot path, because we always has previous schedule point,
+except for the first point. Calculating `Next` for the first point is also
+fairly straightforward:
+
+```go
+    // ...
+    // the following should be run only for the first point in the schedule
+    cwd := current.Weekday()
+    afterMondayMorning := (cwd > time.Monday && cwd < time.Friday) ||
+        (cwd == time.Monday && (current.Hour() > 8 ||
+            current.Hour() == 8 && current.Minute() > 0)) ||
+        (cwd == time.Friday && current.Hour() < 18)
+    if afterMondayMorning {
+        daysToFriday := int(time.Friday - cwd)
+        friday := current.Add(time.Duration(daysToFriday) * 24 * time.Hour)
+        return time.Date(friday.Year(), friday.Month(), friday.Day(),
+            18, 0, 0, 0, current.Location())
+    }
+    daysToMonday := (8 - int(cwd)) % 7
+    monday := current.Add(time.Duration(daysToMonday) * 24 * time.Hour)
+    return time.Date(monday.Year(), monday.Month(), monday.Day(),
+        8, 0, 0, 0, current.Location())
+}
+```
+
+As a really quick test we can try to generate few time points from that
+schedule. Let's start at `2024-03-31 13:30 (Sunday)`:
+
+
+```
+ --- Around Weekend Schedule ---
+Next(2024-03-31 13:30:00 +0000 UTC) = 2024-04-01 08:00:00 +0000 UTC (Monday)
+Next(2024-04-01 08:00:00 +0000 UTC) = 2024-04-05 18:00:00 +0000 UTC (Friday)
+Next(2024-04-05 18:00:00 +0000 UTC) = 2024-04-08 08:00:00 +0000 UTC (Monday)
+Next(2024-04-08 08:00:00 +0000 UTC) = 2024-04-12 18:00:00 +0000 UTC (Friday)
+Next(2024-04-12 18:00:00 +0000 UTC) = 2024-04-15 08:00:00 +0000 UTC (Monday)
+```
+
+
+### Cron modification
+
+Now we try to define a bit more complex scheduling logic depending on cron
+schedule modifications. Let's say our DAG needs to run on everyday at 10:15 am
+but in June and August it shouldn't run on Fridays and on Christmas eve it
+should run at 08:00 am.
 
 
 ```go
