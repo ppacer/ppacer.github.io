@@ -33,15 +33,20 @@ export default defineConfig({
                             link: '/overview/hld/',
                             badge: { text: 'TODO', variant: 'caution' },
                         },
+                        {
+                            label: 'Configuration',
+                            link: '/overview/config/',
+                            badge: { text: 'TODO', variant: 'caution' },
+                        },
                     ]
                 },
                 {
                     label: 'Concepts',
                     items: [
                         { label: 'DAGs', link: '/internals/dags/' },
-                        { label: 'Schedules', link: '/internals/schedules/', badge: 'New' },
+                        { label: 'Schedules', link: '/internals/schedules/' },
+                        { label: 'Databases', link: '/internals/dbs/', badge: 'New' },
                         { label: 'Logging', link: '/internals/loggers/' },
-                        { label: 'Databases', link: '/internals/dbs/' },
                     ]
                 },
             ],
