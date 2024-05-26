@@ -45,11 +45,11 @@ export default defineConfig({
                     items: [
                         { label: 'DAGs', link: '/internals/dags/' },
                         { label: 'Schedules', link: '/internals/schedules/' },
-                        { label: 'Databases', link: '/internals/dbs/', badge: 'New' },
-                        { label: 'Logging', link: '/internals/loggers/' },
+                        { label: 'Databases', link: '/internals/dbs/' },
+                        { label: 'Logging', link: '/internals/loggers/', badge: 'New' },
                     ]
                 },
             ],
         }),
     ],
-});
+})
