@@ -36,7 +36,7 @@ export default defineConfig({
                         {
                             label: 'Configuration',
                             link: '/overview/config/',
-                            badge: { text: 'TODO', variant: 'caution' },
+                            badge: 'New',
                         },
                     ]
                 },
@@ -46,7 +46,7 @@ export default defineConfig({
                         { label: 'DAGs', link: '/internals/dags/' },
                         { label: 'Schedules', link: '/internals/schedules/' },
                         { label: 'Databases', link: '/internals/dbs/' },
-                        { label: 'Logging', link: '/internals/loggers/', badge: 'New' },
+                        { label: 'Logging', link: '/internals/loggers/' },
                     ]
                 },
             ],
