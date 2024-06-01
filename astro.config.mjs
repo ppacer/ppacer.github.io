@@ -31,12 +31,11 @@ export default defineConfig({
                         {
                             label: 'High-level design',
                             link: '/overview/hld/',
-                            badge: { text: 'TODO', variant: 'caution' },
+                            badge: 'New',
                         },
                         {
                             label: 'Configuration',
                             link: '/overview/config/',
-                            badge: 'New',
                         },
                     ]
                 },
