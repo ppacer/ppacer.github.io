@@ -31,7 +31,6 @@ export default defineConfig({
                         {
                             label: 'High-level design',
                             link: '/overview/hld/',
-                            badge: 'New',
                         },
                         {
                             label: 'Configuration',
@@ -46,6 +45,11 @@ export default defineConfig({
                         { label: 'Schedules', link: '/internals/schedules/' },
                         { label: 'Databases', link: '/internals/dbs/' },
                         { label: 'Logging', link: '/internals/loggers/' },
+                        {
+                            label: 'Notifications',
+                            link: '/internals/notifications/',
+                            badge: "New",
+                        },
                     ]
                 },
             ],
