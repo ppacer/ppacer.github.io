@@ -93,7 +93,10 @@ we are constructing a DAG, like this:
 ...
 emailNotifier := MyEmailNotifier()
 n1 := dag.NewNode(emptyTask{taskId: "start"})
-n2 := dag.NewNode(errTask{taskId: "task1"}, dag.WithCustomNotifier(emailNotifier))
+n2 := dag.NewNode(
+        errTask{taskId: "task1"},
+        dag.WithCustomNotifier(emailNotifier),
+    )
 n3 := dag.NewNode(emptyTask{taskId: "end"})
 n1.Next(n2).Next(n3)
 
@@ -125,8 +128,8 @@ func (t *MyTask) Execute(tc dag.TaskContext) error {
         msgData := notify.MsgData{ExecTs: tc.DagRun.ExecTs}
         sendErr := tc.Notifier.Send(ctx, tmpl, msgData)
         if sendErr != nil {
-            tc.Logger.Error("Failure while sending external message", "err",
-                sendErr.Error())
+            tc.Logger.Error("Failure while sending external message",
+                "err", sendErr.Error())
             return sendErr
         }
     }
