@@ -63,6 +63,7 @@ structure of dependencies between tasks. For this reason `dag.Node` exists.
 ```go
 type Node struct {
     Task     Task
+    Config   TaskConfig
     Children []*Node
 }
 
@@ -73,6 +74,68 @@ in a DAG, which has a Task and pointers to children nodes. Most of the API is
 designed to work with `Task`, but sometimes it's more convenient to use
 `*Node`.
 
+
+## Task configuration
+
+Task configuration is kept on the `Node` level. This is because `Task` is all
+about implementing `Execute` method and information about DAG structure and
+configuration is kept on `dag.Node` level. It's a implementation detail though.
+As we already saw `Node` type contains `Config` field of type `TaskConfig`. The
+most convenient way to setup custom task configuration is by creating a new
+node using `NewNode` function.
+
+
+```go
+package dag
+
+type TaskConfigFunc func(*TaskConfig)
+
+func NewNode(task Task, configFuncs ...TaskConfigFunc) *Node {
+    ...
+}
+```
+
+When we don't pass any `configFuncs`, then
+[dag.DefaultTaskConfig](https://pkg.go.dev/github.com/ppacer/core/dag#DefaultTaskConfig)
+would be used. Additionally
+[ppacer/core/dag](https://pkg.go.dev/github.com/ppacer/core/dag) package
+contains a set of `TaskConfigFunc` which can be used to override any field of
+`TaskConfig`.
+
+Let's take a look on few examples:
+
+```go
+var task dag.Task = createSomeTask()
+
+// task with default config
+n1 := dag.NewNode(task)
+
+// task with 3 retries
+n2 := dag.NewNode(task, dag.WithTaskRetries(3))
+
+// task with 3 retries and 5 minutes delay between those retries
+n3 := dag.NewNode(
+    task,
+    dag.WithTaskRetries(3),
+    dag.WithTaskRetriesDelay(5 * 60 * time.Second),
+)
+
+// when the following task would fail, then email notification would be sent
+var emailNotifier notify.Sender = setupEmailNotifier() // mock
+n4 := dag.NewNode(task, dag.WithCustomNotifier(emailNotifier))
+
+// setting up the same config for few tasks
+myTaskConfig := func(tc *TaskConfig) {
+    dag.WithTaskRetries(3)(tc)
+    dag.WithTaskRetriesDelay(10 * time.Second)(tc)
+    dag.WithTaskTimeout(60 * time.Second)(tc)
+}
+
+m1 := dag.NewNode(task1, myTaskConfig)
+m2 := dag.NewNode(task2, myTaskConfig)
+// ...
+mN := dag.NewNode(taskN, myTaskConfig)
+```
 
 ## DAGs
 
