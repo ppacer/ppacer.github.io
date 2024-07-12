@@ -61,5 +61,6 @@ executed task status - it doesn't have access to the main ppacer database.
 hello world](/start/intro) example. Because of facts that `Executor`
 communicates with `Scheduler` via HTTP and has information about
 `dag.Registry` of processes we can have defined `Executor` in a separate binary
-or even in multiple binaries placed on different computers or k8s nodes.
+or even in multiple binaries placed on different computers or k8s nodes
+connected in a network.
 

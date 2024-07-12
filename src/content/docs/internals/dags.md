@@ -20,6 +20,8 @@ type TaskContext struct {
     Context context.Context
     Logger  *slog.Logger
     DagRun  RunInfo
+
+    Notifier notify.Sender
 }
 
 type Task interface {
@@ -126,9 +128,9 @@ n4 := dag.NewNode(task, dag.WithCustomNotifier(emailNotifier))
 
 // setting up the same config for few tasks
 myTaskConfig := func(tc *TaskConfig) {
-    dag.WithTaskRetries(3)(tc)
-    dag.WithTaskRetriesDelay(10 * time.Second)(tc)
-    dag.WithTaskTimeout(60 * time.Second)(tc)
+    tc.TimeoutSeconds = 60
+    tc.Retries = 3
+    tc.RetriesDelaySeconds = (1800 * time.Milliseconds).Seconds()
 }
 
 m1 := dag.NewNode(task1, myTaskConfig)
