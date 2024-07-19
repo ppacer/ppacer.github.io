@@ -33,6 +33,7 @@ program. Start by creating a file named `main.go` with the following content:
 package main
 
 import (
+    "context"
     "embed"
     "fmt"
     "log"
@@ -53,7 +54,8 @@ func main() {
     dags := dag.Registry{} // no DAGs yet
 
     // Setup default scheduler
-    schedulerServer := scheduler.DefaultStarted(dags, "scheduler.db", port)
+    ctx := context.TODO()
+    schedulerServer := scheduler.DefaultStarted(ctx, dags, "scheduler.db", port)
 
     // Setup and run executor in a separate goroutine
     go func() {
@@ -130,7 +132,7 @@ func printDAG(dagId string) dag.Dag {
     start := dag.NewNode(printTask{taskId: "start"})
     start.NextTask(printTask{taskId: "finish"})
 
-    startTs := time.Date(2024, time.March, 11, 12, 0, 0, 0, time.UTC)
+    startTs := time.Date(2024, time.March, 11, 12, 0, 0, 0, time.Local)
     schedule := schedule.NewFixed(startTs, 10*time.Second)
 
     printDag := dag.New(dag.Id(dagId)).
@@ -152,7 +154,8 @@ func main() {
     dags.Add(printDAG("example"))
 
     // Setup default scheduler
-    schedulerServer := scheduler.DefaultStarted(dags, "scheduler.db", port)
+    ctx := context.TODO()
+    schedulerServer := scheduler.DefaultStarted(ctx, dags, "scheduler.db", port)
     // ...
 ```
 
@@ -197,6 +200,16 @@ Every 10 seconds, you should see scheduler logs and our messages from
 
 You can observe the output for a while, then stop the program. This time,
 databases should contain data.
+
+:::note
+If you want a less noisy stdout, you can increase the log severity level using
+an environment variable:
+
+```
+PPACER_LOG_LEVEL=WARN ./ppacer_demo
+```
+:::
+
 
 
 ## Exploring scheduler database
