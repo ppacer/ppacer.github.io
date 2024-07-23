@@ -140,3 +140,47 @@ func (t *MyTask) Execute(tc dag.TaskContext) error {
 
 In the example above we can see a `Task` implementation which sends an external
 message in case when randomly generated number is greater than seven.
+
+
+## Notifier implementations
+
+Up to this point we learned about the generic interface for sending
+notifications and its implementations within `ppacer/core/notify` package.
+Those implementations are primarily useful for local development and writing
+tests. More practical implementations are available in
+[github.com/ppacer/notifiers](https://github.com/ppacer/notifiers) project.
+
+
+Project `ppacer/notifiers` has the following structure:
+
+import { FileTree } from '@astrojs/starlight/components';
+
+<FileTree>
+- .git
+- README.md
+- discord
+    - go.mod
+    - go.sum
+    - discord.go
+- telegram
+    - go.mod
+    - go.sum
+    - telegram.go
+- ...
+</FileTree>
+
+As we can see, the `ppacer/notifiers` project contains multiple Go packages.
+Each Go package provides at least one implementation of
+`ppacer/core/notify.Sender` for a specific communication channel. Different
+communication channels are divided into separate Go packages, because they
+might require different sets of dependencies, and typically only one
+communication channel is used for the scheduler. Fetching all other
+dependencies for other notifiers would be suboptimal. That is also why we
+avoided adding communication-channel-specific implementations to the ppacer
+core notification package.
+
+
+To get the current list of available notifier implementations, please refer to
+[ppacer/notifiers/README](https://github.com/ppacer/notifiers?tab=readme-ov-file#available-implementations)
+README file.
+
