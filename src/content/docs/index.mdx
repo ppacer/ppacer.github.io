@@ -8,20 +8,38 @@ Ppacer is a DAG scheduler implemented in Go. It aims to provide high
 reliability and performance, simple deployments, and minimal resource overhead.
 
 
-## Motivations
+## Why ppacer?
 
-The main motivation behind building ppacer was the pain of using and
-maintaining other schedulers implemented in Python, which often involve
-challenges related to maintaining Python dependencies and dealing with
-relatively low performance and high resource overhead.
+The goal of ppacer is to introduce a workflow scheduler (and executors) that
+is:
 
+* Straightforward to set up locally and deploy to a production environment.
+* Reliable, stable and easy to maintain.
+* Capable of providing high performance with very low overhead during process
+    scheduling and execution.
+* Designed with minimal runtime dependencies.
+* Simple by default and easy customizable when needed.
+* Built to offer a great developer experience.
+
+
+## Features
+
+Ppacer's high-level features include:
+
+* Compilation into self-contained binaries available on all modern operating
+    systems.
+* Support for sending external alerts and notifications.
+* A core library that has no dependencies other than SQLite driver.
+* The ability to implement end-to-end tests for DAG execution as regular Go
+    tests.
 
 
 ## Status
 
-Currently (May 2024) [ppacer core library](https://github.com/ppacer/core) is
+Currently (August 2024) [ppacer core library](https://github.com/ppacer/core) is
 close to MVP but far away from even `v0.1`. At the moment I'm focused on
 working on the frontend, to deliver MVP version of ppacer.
+
 
 
 <CardGrid>
@@ -29,9 +47,5 @@ working on the frontend, to deliver MVP version of ppacer.
     <LinkCard title="API reference" href="https://pkg.go.dev/github.com/ppacer/core/" />
 </CardGrid>
 
-
-## Features
-
-* **TODO**
 
 
