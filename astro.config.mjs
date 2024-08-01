@@ -6,7 +6,11 @@ export default defineConfig({
     site: 'https://ppacer.org',
     integrations: [
         starlight({
-            title: 'ppacer docs',
+            title: 'docs',
+            logo: {
+                light: './src/assets/logo_6_full_3.svg',
+                dark: './src/assets/logo_6_full_3_dark.svg',
+            },
             description: 'ppacer documentation',
             social: {
                 github: 'https://github.com/ppacer/core',
