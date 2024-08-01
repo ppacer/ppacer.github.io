@@ -8,8 +8,8 @@ those structures. Also there is no single global place for configuration,
 rather each top-level ppacer object which can be configurable would accept
 appropriate configuration type in its constructor.
 
-Usually for each configuration Go structure there is corresponding instance of
-that type defining default configuration. For example:
+Usually for each configuration Go structure there is a corresponding instance
+of that type defining default configuration. For example:
 
 ```go
 // Configuration for DagRunWatcher which is responsible for scheduling new DAG
@@ -47,7 +47,7 @@ scheduler is initialized using
 function which helps us create ppacer scheduler using the default
 configuration.
 
-Let's assume, for a moment, that we want to initialize non default ppacer
+Let's assume, for a moment, that we want to initialize non-default ppacer
 scheduler. To do it, we should use
 [scheduler.New](https://pkg.go.dev/github.com/ppacer/core/scheduler#New)
 constructor. That function needs, among other parameters, scheduler
@@ -69,6 +69,12 @@ configuration object.
 Configuration for ppacer executors is much simpler, then for the scheduler.
 It's defined by
 [exec.Config](https://pkg.go.dev/github.com/ppacer/core/exec#Config) type.
+
+
+## Task configuration
+
+Chapter on configuration related to particular DAG tasks, can be found in here:
+[DAGs -> Task Configuration](/internals/dags/#task-configuration).
 
 
 ## Details and default values
