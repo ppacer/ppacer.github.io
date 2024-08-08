@@ -1,0 +1,196 @@
+---
+title: Getting started with ppacer
+---
+
+
+## Intro
+
+To begin, we'll set up new Go project, install ppacer and run `hello world`
+example.
+
+:::note
+The only prerequisite is having Go compiler in version `1.22` or higher.
+:::
+
+
+## Installing ppacer
+
+```bash title="Setup Go project and install ppacer - Linux/MacOS"
+mkdir ppacer-demo && cd ppacer-demo
+go mod init ppacerDemo
+go get github.com/ppacer/core@latest
+go get github.com/ppacer/tasks@latest
+go get github.com/ppacer/ui@latest
+```
+
+```cmd title="Setup Go project and install ppacer - Windows PowerShell"
+mkdir ppacer-demo
+cd ppacer-demo
+
+go mod init ppacerDemo
+go get github.com/ppacer/core@latest
+go get github.com/ppacer/tasks@latest
+go get github.com/ppacer/ui@latest
+```
+
+
+## Hello World
+
+Now, let's proceed to initiate the ppacer with a single DAG. Start by creating
+a file named `main.go` with the following content:
+
+
+```go
+package main
+
+import (
+    "context"
+    "time"
+
+    "github.com/ppacer/core"
+    "github.com/ppacer/core/dag"
+    "github.com/ppacer/core/dag/schedule"
+    "github.com/ppacer/tasks"
+    "github.com/ppacer/ui"
+)
+
+const (
+    schedulerPort = 9321
+    uiPort        = 9322
+)
+
+func main() {
+    ctx := context.Background()
+
+    dags := dag.Registry{}
+    dags.Add(printDAG("hello_world_dag"))
+
+    go func() {
+        ui.DefaultStarted(schedulerPort, uiPort)
+    }()
+    core.DefaultStarted(ctx, dags, schedulerPort)
+}
+
+func printDAG(dagId string) dag.Dag {
+    //         t21
+    //       /
+    // start
+    //       \
+    //         t22 --> finish
+    start := dag.NewNode(tasks.NewPrintTask("start", "hello"))
+    t21 := dag.NewNode(tasks.NewPrintTask("t21", "foo"))
+    t22 := dag.NewNode(tasks.NewPrintTask("t22", "bar"))
+    finish := dag.NewNode(tasks.NewPrintTask("finish", "I'm done!"))
+
+    start.Next(t21)
+    start.Next(t22)
+    t22.Next(finish)
+
+    startTs := time.Date(2024, time.March, 11, 12, 0, 0, 0, time.Local)
+    schedule := schedule.NewFixed(startTs, 10*time.Second)
+
+    printDag := dag.New(dag.Id(dagId)).
+        AddSchedule(&schedule).
+        AddRoot(start).
+        Done()
+    return printDag
+}
+```
+
+Now we can compile and run our program.
+
+```bash title="Linux/MacOS"
+go build
+./ppacerDemo
+```
+
+```bash title="Windows PowerShell"
+go build
+.\ppacerDemo.exe
+```
+
+Upon running, you should see a bunch of `INFO` logs from ppacer Scheduler.
+Please feel free to skip those logs and go straight to the UI at
+[http://localhost:9322](http://localhost:9322).
+
+
+:::note
+If you want a less noisy stdout, you can increase the log severity level using
+an environment variable:
+
+```bash title="Linux/MacOS"
+PPACER_LOG_LEVEL=WARN ./ppacerDemo
+```
+
+```bash title="Windows PowerShell"
+$env:PPACER_LOG_LEVEL = "WARN"
+.\ppacerDemo.exe
+```
+:::
+
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Explanations
+
+So what actually happened in our program? On high level we defined a DAG which
+prints messages in particular order and runs each 10 seconds.
+Let's break down the `main.go` file.
+
+<Steps>
+1. Import the Go standard and ppacer packages:
+    ```go
+    import (
+        "context"
+        "time"
+
+        "github.com/ppacer/core"
+        "github.com/ppacer/core/dag"
+        "github.com/ppacer/core/dag/schedule"
+        "github.com/ppacer/tasks"
+        "github.com/ppacer/ui"
+    )
+
+    ```
+
+2. Define constants for ppacer Scheduler and UI ports:
+    ```go
+    const (
+        schedulerPort = 9321
+        uiPort        = 9322
+    )
+    ```
+3. The `main` function in `main` package is the program entry point in Go.
+4. Define the required context for the ppacer Scheduler:
+    ```go
+    ctx := context.Background()
+    ```
+5. Initialize the DAG registry and add new DAG from `printDAG` function:
+    ```go
+    dags := dag.Registry{}
+    dags.Add(printDAG("hello_world_dag"))
+    ```
+6. Spin off the ppacer UI in a separate goroutine (so it can run in parallel
+to the Scheduler)
+    ```go
+    go func() {
+        ui.DefaultStarted(schedulerPort, uiPort)
+    }()
+    ```
+7. Start the ppacer Scheduler (also in the form of an HTTP server) with the
+default configuration for given context, DAG registry and port:
+    ```go
+    core.DefaultStarted(ctx, dags, schedulerPort)
+    ```
+8. The `printDAG` function defines a DAG for printing messages in particular
+order. Details on DAGs, `Tasks` and schedules can be found further in the
+documentation.
+</Steps>
+
+
+## Complete example
+
+The whole source code for above example can be found in here:
+[github.com/ppacer/examples](https://github.com/ppacer/examples/tree/main/hello).
+
+
